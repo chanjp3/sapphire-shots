@@ -139,22 +139,39 @@ h2{
 .svc .tag{font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;color:var(--sapphire-bright)}
 .svc p{font-size:.88rem;color:var(--mist)}
 
-/* ---------- portfolio ---------- */
-.filters{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:2.4rem}
-.pill{
-  font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--mist);background:none;border:1px solid var(--line);border-radius:2px;
-  padding:.6rem 1.1rem;cursor:pointer;transition:all .2s;
+/* ---------- galleries ---------- */
+.crumbs{
+  display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;margin-top:2.6rem;
+  font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;
 }
-.pill:hover{color:var(--paper);border-color:var(--mist)}
-.pill[aria-pressed="true"]{background:var(--sapphire);border-color:var(--sapphire);color:#fff}
-.pill .count{color:var(--ice);opacity:.6;margin-left:.45rem}
-.pill[aria-pressed="true"] .count{color:#fff}
-.empty-cat{
-  grid-column:1/-1;border:1px dashed var(--line);border-radius:2px;
-  padding:3.5rem 1.5rem;text-align:center;color:var(--mist);
-  font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+.crumbs a{color:var(--sapphire-bright);text-decoration:none}
+.crumbs a:hover{color:var(--ice)}
+.crumbs .sep,.crumbs .here{color:var(--mist)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:1.6rem}
+.card{
+  position:relative;display:block;border:1px solid var(--line);border-radius:2px;
+  overflow:hidden;background:var(--ink-soft);text-decoration:none;
 }
+.card img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .5s ease}
+.card:hover img,.card:focus-visible img{transform:scale(1.04)}
+.card-info{
+  position:absolute;left:0;right:0;bottom:0;padding:2.8rem 1.2rem 1rem;
+  background:linear-gradient(to top,rgba(6,10,20,.94),transparent);
+}
+.card-info h3{font-family:var(--display);font-weight:600;font-size:1.15rem;margin-bottom:.15rem}
+.card-info span{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;color:var(--ice)}
+.card.soon{
+  display:flex;align-items:center;justify-content:center;aspect-ratio:auto;min-height:100%;
+  border-style:dashed;color:var(--mist);font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.18em;text-align:center;padding:2rem 1rem;cursor:default;
+}
+
+/* ---- image protection (deters save/drag/long-press; watermark is in the files) ---- */
+.hero-img img,.film-frame>img,.about-grid img,#galleryView img{
+  user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none;
+}
+.shot img,.card img{pointer-events:none}
+
 .grid{
   columns:3;column-gap:1.4rem;margin-top:3.5rem;
 }
@@ -259,6 +276,7 @@ footer a:hover{color:#fff}
 @media (max-width:980px){
   .svc-grid{grid-template-columns:repeat(2,1fr)}
   .grid{columns:2}
+  .cards{grid-template-columns:repeat(2,1fr)}
   .about-grid,.contact .wrap{grid-template-columns:1fr;gap:2.5rem}
 }
 @media (max-width:680px){
@@ -274,6 +292,7 @@ footer a:hover{color:#fff}
   .hero-inner{padding:0 1.2rem}
   .svc-grid{grid-template-columns:1fr}
   .grid{columns:1}
+  .cards{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr}
 }
 </style>
@@ -296,7 +315,7 @@ footer a:hover{color:#fff}
 <header class="hero vf" id="top">
   <span class="vf-b" aria-hidden="true"></span>
   <div class="hero-img">
-    <img src="img/air-shows/air-sea-26-t0a0370.jpg" alt="Fighter jet climbing against a deep blue sky at the Air &amp; Sea Show">
+    <img src="img/air-shows/air-sea-26/t0a0370.jpg" alt="Fighter jet climbing against a deep blue sky at the Air &amp; Sea Show">
   </div>
   <div class="hero-inner">
     <div class="rec" style="margin-bottom:1rem"><span class="dot" aria-hidden="true"></span>REC&nbsp;&nbsp;00:00:01:24</div>
@@ -345,9 +364,9 @@ footer a:hover{color:#fff}
   <div class="wrap">
     <div class="eyebrow reveal">Galleries</div>
     <h2 class="reveal">The galleries.</h2>
-    <p class="lede reveal">Browse by event type. The full archive lives on Instagram — <a href="https://instagram.com/sapphire_shots" target="_blank" rel="noopener" style="color:var(--ice)">@sapphire_shots</a>.</p>
-    <div class="filters reveal" id="filters" role="group" aria-label="Filter galleries by category"></div>
-    <div class="grid" id="galleryGrid"></div>
+    <p class="lede reveal">Pick a category, then step into a specific event. The full archive lives on Instagram — <a href="https://instagram.com/sapphire_shots" target="_blank" rel="noopener" style="color:var(--ice)">@sapphire_shots</a>.</p>
+    <nav class="crumbs" id="crumbs" aria-label="Gallery navigation"></nav>
+    <div id="galleryView"></div>
   </div>
 </section>
 
@@ -358,7 +377,7 @@ footer a:hover{color:#fff}
     <h2 class="reveal">Film &amp; video.</h2>
     <p class="lede reveal">Race-day recaps, air show reels, and automotive films — flat-profile footage graded in our signature deep-blue palette.</p>
     <div class="film-frame reveal">
-      <img src="img/air-shows/sun-n-fun-25-t0a1092.jpg" alt="Air show aircraft at SUN n FUN 2025" loading="lazy">
+      <img src="img/air-shows/sun-n-fun-25/t0a1092.jpg" alt="Air show aircraft at SUN n FUN 2025" loading="lazy">
       <button class="play" aria-label="Play showreel">▶</button>
       <div class="bar">
         <span>SHOWREEL_2026.MP4</span>
@@ -386,7 +405,7 @@ footer a:hover{color:#fff}
       </div>
       <div class="vf reveal" style="position:relative">
         <span class="vf-b" aria-hidden="true"></span>
-        <img src="img/car-shows/modamiami-25-t0a7050.jpg" alt="Supercar detail at ModaMiami" loading="lazy">
+        <img src="img/car-shows/modamiami-25/t0a7050.jpg" alt="Supercar detail at ModaMiami" loading="lazy">
       </div>
     </div>
   </div>
@@ -443,177 +462,104 @@ footer a:hover{color:#fff}
 
 <script>
 /* =====================================================================
-   GALLERY — add your photos here.
-   Each photo is one line in the PHOTOS list below.
-   - src:   path to the photo inside the img/ folder of this repo
-   - alt:   short description for accessibility
-   - title: caption shown on hover
-   - meta:  EXIF-style caption (lens · aperture · shutter) — optional
-   - cat:   one of the CATEGORIES keys below
-   New categories: add a key here and use it in your photos.
+   GALLERY — organized as category → event → photos.
+   To add a new event:
+     1. Put web-sized photos in img/<category>/<event-slug>/
+     2. Add the event under its category in GALLERY below:
+        "my-event-slug": {"label":"Event Name 2026","photos":[
+           {"src":"img/air-shows/my-event-slug/photo1.jpg","meta":"500mm · f/7.1 · 1/2000"},
+           ...
+        ]}
+   New categories: add a key to CAT_LABELS and CAT_ORDER.
    ===================================================================== */
-const CATEGORIES = {
-  "car-shows":    "Car Shows",
-  "photo-shoots": "Photo Shoots",
-  "race-tracks":  "Race Tracks",
-  "air-shows":    "Air Shows",
-  "equestrian":   "Equestrian"
+const GALLERY = {"car-shows":{"modamiami-25":{"label":"ModaMiami 2025","photos":[{"src":"img/car-shows/modamiami-25/t0a7049.jpg","meta":"63mm · f/2.8 · 1/500 · ISO 400"},{"src":"img/car-shows/modamiami-25/t0a7050.jpg","meta":"70mm · f/2.8 · 1/500 · ISO 400"},{"src":"img/car-shows/modamiami-25/t0a7303.jpg","meta":"200mm · f/4 · 1/400 · ISO 100"},{"src":"img/car-shows/modamiami-25/t0a7357.jpg","meta":"200mm · f/4 · 1/800 · ISO 160"},{"src":"img/car-shows/modamiami-25/t0a7364.jpg","meta":"200mm · f/4 · 1/800 · ISO 160"},{"src":"img/car-shows/modamiami-25/t0a7368.jpg","meta":"200mm · f/4 · 1/800 · ISO 160"}]}},"photo-shoots":{"fro":{"label":"Fro — Portrait Session","photos":[{"src":"img/photo-shoots/fro/t0a4166.jpg","meta":"44mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4171.jpg","meta":"39mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4173.jpg","meta":"39mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4177.jpg","meta":"70mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4183.jpg","meta":"63mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4188.jpg","meta":"44mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4196.jpg","meta":"70mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4203.jpg","meta":"70mm · f/4 · 1/1000 · ISO 100"},{"src":"img/photo-shoots/fro/t0a4209.jpg","meta":"55mm · f/4 · 1/1000 · ISO 100"}]}},"air-shows":{"air-sea-26":{"label":"Air & Sea Show ’26","photos":[{"src":"img/air-shows/air-sea-26/t0a0037.jpg","meta":"500mm · f/7.1 · 1/1600 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0143.jpg","meta":"500mm · f/7.1 · 1/1000 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0236.jpg","meta":"500mm · f/7.1 · 1/1000 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0242.jpg","meta":"500mm · f/7.1 · 1/1000 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0244.jpg","meta":"500mm · f/7.1 · 1/1000 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0260.jpg","meta":"500mm · f/7.1 · 1/1000 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0275.jpg","meta":"500mm · f/7.1 · 1/1000 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a0362.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0370.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0373.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0391.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0570.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0579.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0584.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0624.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0633.jpg","meta":"500mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0676.jpg","meta":"363mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0686.jpg","meta":"363mm · f/7.1 · 1/800 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0787.jpg","meta":"270mm · f/16 · 1/250 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a0805.jpg","meta":"400mm · f/16 · 1/250 · ISO 200"},{"src":"img/air-shows/air-sea-26/t0a9001.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9020.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9028.jpg","meta":"223mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9064.jpg","meta":"100mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9087.jpg","meta":"270mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9201.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9228.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9231.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9256.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9358.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9454.jpg","meta":"472mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9481.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9505.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9540.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9544.jpg","meta":"500mm · f/7.1 · 1/2000 · ISO 400"},{"src":"img/air-shows/air-sea-26/t0a9607.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 250"},{"src":"img/air-shows/air-sea-26/t0a9652.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 250"},{"src":"img/air-shows/air-sea-26/t0a9671.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 250"},{"src":"img/air-shows/air-sea-26/t0a9681.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 250"},{"src":"img/air-shows/air-sea-26/t0a9683.jpg","meta":"159mm · f/7.1 · 1/1250 · ISO 250"},{"src":"img/air-shows/air-sea-26/t0a9708.jpg","meta":"300mm · f/7.1 · 1/400 · ISO 50"},{"src":"img/air-shows/air-sea-26/t0a9943.jpg","meta":"500mm · f/7.1 · 1/1600 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a9947.jpg","meta":"500mm · f/7.1 · 1/1600 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a9955.jpg","meta":"500mm · f/7.1 · 1/1600 · ISO 320"},{"src":"img/air-shows/air-sea-26/t0a9965.jpg","meta":"500mm · f/7.1 · 1/1600 · ISO 320"}]},"sun-n-fun-25":{"label":"SUN ’n FUN 2025","photos":[{"src":"img/air-shows/sun-n-fun-25/t0a0058.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0163.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0191.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0213.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0251.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0265.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0337.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0443.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0577.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0581.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0589.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0601.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0631.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0899.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0959.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a0976.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a1077.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a1092.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a1098.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a1234.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a8224.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 160"},{"src":"img/air-shows/sun-n-fun-25/t0a8282.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 160"},{"src":"img/air-shows/sun-n-fun-25/t0a8405.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 160"},{"src":"img/air-shows/sun-n-fun-25/t0a8493.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 160"},{"src":"img/air-shows/sun-n-fun-25/t0a8587.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 160"},{"src":"img/air-shows/sun-n-fun-25/t0a8651.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 100"},{"src":"img/air-shows/sun-n-fun-25/t0a8653.jpg","meta":"500mm · f/7.1 · 1/500 · ISO 100"},{"src":"img/air-shows/sun-n-fun-25/t0a8752.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a8919.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9007.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9015.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9030.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9146.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9219.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9281.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9481.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9482.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9537.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9596.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9602.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9682.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9690.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"},{"src":"img/air-shows/sun-n-fun-25/t0a9819.jpg","meta":"500mm · f/7.1 · 1/250 · ISO 100"},{"src":"img/air-shows/sun-n-fun-25/t0a9861.jpg","meta":"500mm · f/7.1 · 1/250 · ISO 100"},{"src":"img/air-shows/sun-n-fun-25/t0a9900.jpg","meta":"500mm · f/7.1 · 1/250 · ISO 100"},{"src":"img/air-shows/sun-n-fun-25/t0a9986.jpg","meta":"500mm · f/7.1 · 1/1250 · ISO 400"}]}},"equestrian":{"wec-july":{"label":"WEC Horse Show","photos":[{"src":"img/equestrian/wec-july/t0a9944.jpg","meta":"200mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9945.jpg","meta":"200mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9946.jpg","meta":"200mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9965.jpg","meta":"80mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9966.jpg","meta":"80mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9980.jpg","meta":"151mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9981.jpg","meta":"151mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9995.jpg","meta":"151mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9996.jpg","meta":"151mm · f/4 · 1/1600 · ISO 100"},{"src":"img/equestrian/wec-july/t0a9997.jpg","meta":"151mm · f/4 · 1/1600 · ISO 100"}]}}};
+
+const CAT_LABELS = {
+  "car-shows":   "Car Shows",
+  "photo-shoots":"Photo Shoots",
+  "race-tracks": "Track Photos",
+  "air-shows":   "Air Shows",
+  "equestrian":  "Horse Shows"
+};
+const CAT_ORDER = ["car-shows","photo-shoots","race-tracks","air-shows","equestrian"];
+const COVERS = {
+  "car-shows":   "img/car-shows/modamiami-25/t0a7357.jpg",
+  "photo-shoots":"img/photo-shoots/fro/t0a4166.jpg",
+  "air-shows":   "img/air-shows/air-sea-26/t0a0370.jpg",
+  "equestrian":  "img/equestrian/wec-july/t0a9980.jpg"
 };
 
-const PHOTOS = [
-  {src:"img/car-shows/modamiami-25-t0a7049.jpg", alt:"ModaMiami 2025", title:"ModaMiami 2025", meta:"63mm · f/2.8 · 1/500 · ISO 400", cat:"car-shows"},
-  {src:"img/car-shows/modamiami-25-t0a7050.jpg", alt:"ModaMiami 2025", title:"ModaMiami 2025", meta:"70mm · f/2.8 · 1/500 · ISO 400", cat:"car-shows"},
-  {src:"img/car-shows/modamiami-25-t0a7303.jpg", alt:"ModaMiami 2025", title:"ModaMiami 2025", meta:"200mm · f/4 · 1/400 · ISO 100", cat:"car-shows"},
-  {src:"img/car-shows/modamiami-25-t0a7357.jpg", alt:"ModaMiami 2025", title:"ModaMiami 2025", meta:"200mm · f/4 · 1/800 · ISO 160", cat:"car-shows"},
-  {src:"img/car-shows/modamiami-25-t0a7364.jpg", alt:"ModaMiami 2025", title:"ModaMiami 2025", meta:"200mm · f/4 · 1/800 · ISO 160", cat:"car-shows"},
-  {src:"img/car-shows/modamiami-25-t0a7368.jpg", alt:"ModaMiami 2025", title:"ModaMiami 2025", meta:"200mm · f/4 · 1/800 · ISO 160", cat:"car-shows"},
-  {src:"img/photo-shoots/fro-t0a4166.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"44mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4171.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"39mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4173.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"39mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4177.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"70mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4183.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"63mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4188.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"44mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4196.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"70mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4203.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"70mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/photo-shoots/fro-t0a4209.jpg", alt:"Fro — Portrait Session", title:"Fro — Portrait Session", meta:"55mm · f/4 · 1/1000 · ISO 100", cat:"photo-shoots"},
-  {src:"img/air-shows/air-sea-26-t0a0037.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1600 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0143.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1000 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0236.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1000 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0242.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1000 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0244.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1000 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0260.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1000 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0275.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1000 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0362.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0370.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0373.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0391.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0570.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0579.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0584.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0624.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0633.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0676.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"363mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0686.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"363mm · f/7.1 · 1/800 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0787.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"270mm · f/16 · 1/250 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a0805.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"400mm · f/16 · 1/250 · ISO 200", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9001.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9020.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9028.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"223mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9064.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"100mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9087.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"270mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9201.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9228.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9231.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9256.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9358.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9454.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"472mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9481.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9505.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9540.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9544.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/2000 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9607.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1250 · ISO 250", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9652.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1250 · ISO 250", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9671.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1250 · ISO 250", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9681.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1250 · ISO 250", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9683.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"159mm · f/7.1 · 1/1250 · ISO 250", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9708.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"300mm · f/7.1 · 1/400 · ISO 50", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9943.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1600 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9947.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1600 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9955.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1600 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/air-sea-26-t0a9965.jpg", alt:"Air & Sea Show \u201926", title:"Air & Sea Show \u201926", meta:"500mm · f/7.1 · 1/1600 · ISO 320", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0058.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0163.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0191.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0213.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0251.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0265.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0337.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0443.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0577.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0581.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0589.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0601.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0631.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0899.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0959.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a0976.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a1077.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a1092.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a1098.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a1234.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8224.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 160", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8282.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 160", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8405.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 160", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8493.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 160", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8587.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 160", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8651.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 100", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8653.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/500 · ISO 100", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8752.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a8919.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9007.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9015.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9030.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9146.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9219.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9281.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9481.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9482.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9537.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9596.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9602.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9682.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9690.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9819.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/250 · ISO 100", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9861.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/250 · ISO 100", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9900.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/250 · ISO 100", cat:"air-shows"},
-  {src:"img/air-shows/sun-n-fun-25-t0a9986.jpg", alt:"SUN \u2019n FUN 2025", title:"SUN \u2019n FUN 2025", meta:"500mm · f/7.1 · 1/1250 · ISO 400", cat:"air-shows"},
-  {src:"img/equestrian/wec-july-t0a9944.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"200mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9945.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"200mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9946.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"200mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9965.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"80mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9966.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"80mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9980.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"151mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9981.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"151mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9995.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"151mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9996.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"151mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"},
-  {src:"img/equestrian/wec-july-t0a9997.jpg", alt:"WEC Horse Show", title:"WEC Horse Show", meta:"151mm · f/4 · 1/1600 · ISO 100", cat:"equestrian"}
-];
-/* ============================ end gallery data ====================== */
+const view = document.getElementById('galleryView');
+const crumbs = document.getElementById('crumbs');
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
-const grid=document.getElementById('galleryGrid');
-const filterBar=document.getElementById('filters');
-let activeCat='all';
-
-function buildFilters(){
-  const counts={};
-  PHOTOS.forEach(p=>counts[p.cat]=(counts[p.cat]||0)+1);
-  const pills=[['all',`All<span class="count">${PHOTOS.length}</span>`]]
-    .concat(Object.entries(CATEGORIES).map(([k,label])=>[k,`${label}<span class="count">${counts[k]||0}</span>`]));
-  filterBar.innerHTML=pills.map(([k,label])=>
-    `<button class="pill" data-cat="${k}" aria-pressed="${k===activeCat}">${label}</button>`).join('');
-  filterBar.querySelectorAll('.pill').forEach(b=>b.addEventListener('click',()=>{
-    activeCat=b.dataset.cat;
-    filterBar.querySelectorAll('.pill').forEach(p=>p.setAttribute('aria-pressed',p.dataset.cat===activeCat));
-    renderGrid();
-  }));
+function catStats(cat){
+  const evs = GALLERY[cat] || {};
+  const nEv = Object.keys(evs).length;
+  const nPh = Object.values(evs).reduce((a,e)=>a+e.photos.length,0);
+  return {nEv,nPh};
+}
+function catCover(cat){
+  if (COVERS[cat]) return COVERS[cat];
+  const evs = GALLERY[cat]||{}; const first = Object.values(evs)[0];
+  return first ? first.photos[0].src : "";
 }
 
-function renderGrid(){
-  const items=activeCat==='all'?PHOTOS:PHOTOS.filter(p=>p.cat===activeCat);
-  if(!items.length){
-    grid.innerHTML=`<div class="empty-cat">NO PHOTOS YET IN ${ (CATEGORIES[activeCat]||'THIS CATEGORY').toUpperCase() } — ADD SOME TO THE PHOTOS LIST</div>`;
-    return;
-  }
-  grid.innerHTML=items.map(p=>`
-    <figure class="shot vf">
+function renderCats(){
+  crumbs.innerHTML = '<span class="here">All Galleries</span>';
+  view.innerHTML = '<div class="cards">' + CAT_ORDER.map(cat=>{
+    const {nEv,nPh} = catStats(cat);
+    if(!nPh) return `<div class="card soon">${esc(CAT_LABELS[cat]).toUpperCase()}<br>— COMING SOON —</div>`;
+    return `<a class="card" href="#g/${cat}">
+      <img src="${catCover(cat)}" alt="${esc(CAT_LABELS[cat])} gallery cover" loading="lazy">
+      <div class="card-info"><h3>${esc(CAT_LABELS[cat])}</h3>
+      <span>${nEv} ${nEv===1?'EVENT':'EVENTS'} · ${nPh} PHOTOS</span></div></a>`;
+  }).join('') + '</div>';
+}
+
+function renderEvents(cat){
+  crumbs.innerHTML = `<a href="#g">All Galleries</a><span class="sep">/</span><span class="here">${esc(CAT_LABELS[cat])}</span>`;
+  const evs = GALLERY[cat];
+  view.innerHTML = '<div class="cards">' + Object.entries(evs).map(([slug,ev])=>
+    `<a class="card" href="#g/${cat}/${slug}">
+      <img src="${ev.photos[0].src}" alt="${esc(ev.label)} cover" loading="lazy">
+      <div class="card-info"><h3>${esc(ev.label)}</h3>
+      <span>${ev.photos.length} PHOTOS</span></div></a>`).join('') + '</div>';
+}
+
+function renderPhotos(cat,slug){
+  const ev = GALLERY[cat][slug];
+  crumbs.innerHTML = `<a href="#g">All Galleries</a><span class="sep">/</span>
+    <a href="#g/${cat}">${esc(CAT_LABELS[cat])}</a><span class="sep">/</span>
+    <span class="here">${esc(ev.label)}</span>`;
+  const n = ev.photos.length;
+  view.innerHTML = '<div class="grid">' + ev.photos.map((p,i)=>
+    `<figure class="shot vf">
       <span class="vf-b" aria-hidden="true"></span>
-      <img src="${p.src}" alt="${p.alt||''}" loading="lazy">
-      <figcaption class="shot-meta"><b>${p.title||''}</b>${p.meta?`<span>${p.meta}</span>`:''}</figcaption>
-    </figure>`).join('');
+      <img src="${p.src}" alt="${esc(ev.label)} — frame ${i+1} of ${n}" loading="lazy">
+      <figcaption class="shot-meta"><b>${String(i+1).padStart(2,'0')} / ${n}</b>${p.meta?`<span>${p.meta}</span>`:''}</figcaption>
+    </figure>`).join('') + '</div>';
 }
 
-buildFilters();
-renderGrid();
+function route(){
+  const m = location.hash.match(/^#g(?:\/([\w-]+))?(?:\/([\w-]+))?$/);
+  if(m && m[1] && m[2] && GALLERY[m[1]] && GALLERY[m[1]][m[2]]) renderPhotos(m[1],m[2]);
+  else if(m && m[1] && GALLERY[m[1]]) renderEvents(m[1]);
+  else renderCats();
+}
+route();
+addEventListener('hashchange',()=>{
+  route();
+  if(location.hash.startsWith('#g')) document.getElementById('work').scrollIntoView({behavior:'smooth'});
+});
+
+/* ---- copy deterrents: block right-click save, drag, and save shortcuts on photos ---- */
+['contextmenu','dragstart'].forEach(evt=>document.addEventListener(evt,e=>{
+  if(e.target.closest('img,.shot,.card,.hero-img,.film-frame')) e.preventDefault();
+}));
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey) && ['s','S','u','U'].includes(e.key)) e.preventDefault();
+});
 
 // nav background on scroll
 const nav=document.getElementById('nav');
